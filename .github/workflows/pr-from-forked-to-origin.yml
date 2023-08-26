@@ -10,23 +10,26 @@ jobs:
     name: Open PR from forked/develop to origin/develop
     runs-on: ubuntu-latest
     permissions:
-      contents: write # for opening PR
+      pull-requests: write # for opening PR
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
       - name: Open PR to origin repo
         # IS_SYNCED_TO_ORIGIN_REPO is set in repo/settings/variables/actions
-        if: var.IS_SYNCED_TO_ORIGIN_REPO == 'true'
+        if: vars.IS_SYNCED_TO_ORIGIN_REPO == 'true'
         uses: actions/script@v6
         with:
           script: |
             github.rest.pulls.create({
-              owner: `nervosnetwork`,
+              owner: 'nervosnetwork',
               repo: context.repo.repo,
-              head: context.ref,
-              title: `Merge ${context.ref} to develop`,
+              base: 'develop',
+              head: `${context.repo.owner}/${context.repo.repo}:develop`,
+              title: `Merge ${context.repo.owner}:develop to develop`,
               body: `Ready to deploy`,
             })
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.SYNC_FORKED_REPO }}
