@@ -1,32 +1,36 @@
-name: Open PR from forked/develop to origin/develop
+name: Sync updates from external repos
 
 on:
   push:
     branches:
       - develop
+  # schedule:
+  #   - cron: '*/5 * * * *'
 
 jobs:
   default:
     name: Open PR from forked/develop to origin/develop
     runs-on: ubuntu-latest
     permissions:
-      contents: write # for opening PR
+      pull-requests: write # for opening PR
     steps:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Open PR to origin repo
-        # IS_SYNCED_TO_ORIGIN_REPO is set in repo/settings/variables/actions
-        if: var.IS_SYNCED_TO_ORIGIN_REPO == 'true'
+      - name: Open PR from forked repo to origin one
+        if: vars.EXTERNAL_REPO != ''
         uses: actions/script@v6
         with:
           script: |
             github.rest.pulls.create({
-              owner: `nervosnetwork`,
+              owner: context.repo.owner,
               repo: context.repo.repo,
-              head: context.ref,
-              title: `Merge ${context.ref} to develop`,
+              base: 'develop',
+              head_repo: process.env.REPO,
+              head: `testnet`,
+              title: `Merge ${process.env.REPO}:develop to develop`,
               body: `Ready to deploy`,
             })
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ vars.EXTERNAL_REPO }}
