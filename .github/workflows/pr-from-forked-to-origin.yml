@@ -16,15 +16,17 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Open PR to origin repo
+        #
         # IS_SYNCED_TO_ORIGIN_REPO is set in repo/settings/variables/actions
-        if: var.IS_SYNCED_TO_ORIGIN_REPO == 'true'
+        if: vars.IS_SYNCED_TO_ORIGIN_REPO == 'true'
         uses: actions/script@v6
         with:
           script: |
             github.rest.pulls.create({
-              owner: `nervosnetwork`,
+              owner: context.repo.owner,
               repo: context.repo.repo,
               head: context.ref,
+              base: 'nervosnetwork:develop',
               title: `Merge ${context.ref} to develop`,
               body: `Ready to deploy`,
             })
